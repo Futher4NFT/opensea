@@ -1,8 +1,9 @@
 import {Network, OpenSeaAPIConfig} from "./types";
 import {API_BASE_MAINNET, API_BASE_RINKEBY} from "./constants";
 import axios, {AxiosInstance} from "axios";
-import {Order, OrdersQueryOptions, OrdersQueryResponse, QueryCursors} from "./orders/types";
+import {Order, OrdersQueryOptions, QueryCursors} from "./orders/types";
 import {getOrdersAPIPath, serializeOrdersQueryOptions} from "./orders/utils";
+import * as QueryString from "query-string";
 
 export class OpenSeaAPI {
     public readonly apiBaseUrl: string;
@@ -33,6 +34,13 @@ export class OpenSeaAPI {
         });
     }
 
+    async get<T>(apiPath: string, query: any = {}): Promise<T> {
+        const qs = QueryString.stringify(query);
+        const url = `${apiPath}?${qs}`;
+        const {data} = await this.api.get<T>(url);
+        return data;
+    }
+
     /**
      * 获取订单数据
      * @param protocol
@@ -48,16 +56,14 @@ export class OpenSeaAPI {
                               orderBy = "created_date",
                               ...restOptions
                           }: Omit<OrdersQueryOptions, "limit">): Promise<Order> {
-        const {data} = await this.api.get<QueryCursors & {
+        const data = await this.get<QueryCursors & {
             orders: Order[];
-        }>(getOrdersAPIPath(this.networkName, protocol, side), {
-            params: serializeOrdersQueryOptions({
-                limit: 1,
-                orderBy,
-                orderDirection,
-                ...restOptions,
-            })
-        });
+        }>(getOrdersAPIPath(this.networkName, protocol, side), serializeOrdersQueryOptions({
+            limit: 1,
+            orderBy,
+            orderDirection,
+            ...restOptions,
+        }));
         if (data.orders.length === 0) {
             throw new Error("Not found: no matching order found");
         }
@@ -75,17 +81,16 @@ export class OpenSeaAPI {
         orders: Order[];
     }
         > {
-        const {data} = await this.api.get<QueryCursors & {
+        return await this.get<QueryCursors & {
             orders: Order[];
         }>(
             getOrdersAPIPath(this.networkName, protocol, side),
-            {params:  serializeOrdersQueryOptions({
-                    limit: this.pageSize,
-                    orderBy,
-                    orderDirection,
-                    ...restOptions,
-                })}
+            serializeOrdersQueryOptions({
+                limit: this.pageSize,
+                orderBy,
+                orderDirection,
+                ...restOptions,
+            })
         );
-        return data;
     }
 }

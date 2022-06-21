@@ -5,13 +5,19 @@ import {CROSS_CHAIN_SEAPORT_ADDRESS} from "@opensea/seaport-js/lib/constants";
 import {constructPrivateListingCounterOrder, getPrivateListingFulfillments} from "./orders/privateListings";
 import {OpenSeaAPI} from "./api";
 import {OpenSeaAPIConfig} from "./types";
+import {CONDUIT_KEYS_TO_CONDUIT, CROSS_CHAIN_DEFAULT_CONDUIT_KEY} from "./constants";
 
 export class OpenSeaSDK {
     public seaport: Seaport;
     public readonly api: OpenSeaAPI;
 
     constructor(provider: JsonRpcProvider,apiConfig: OpenSeaAPIConfig = {},) {
-        this.seaport = new Seaport(provider);
+        this.seaport = new Seaport(provider, {
+            conduitKeyToConduit: CONDUIT_KEYS_TO_CONDUIT,
+            overrides: {
+                defaultConduitKey: CROSS_CHAIN_DEFAULT_CONDUIT_KEY,
+            },
+        });
         this.api = new OpenSeaAPI(apiConfig);
     }
 

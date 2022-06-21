@@ -297,7 +297,7 @@ export type OrdersQueryOptions = OrderAPIOptions & {
     includeBundled?: boolean;
     listedAfter?: number | string;
     listedBefore?: number | string;
-    tokenIds?: string[];
+    tokenIds?: string[]|string;
     assetContractAddress?: string;
     orderBy?: OpenOrderOrderingOption;
     orderDirection?: OrderByDirection;

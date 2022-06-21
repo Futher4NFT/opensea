@@ -1,5 +1,4 @@
-import {Network} from "../src/types";
-import {OpenSeaAPI} from "../src/api";
+import {Network, OpenSeaAPI} from "../src";
 
 
 test('getOrder', async () => {
@@ -11,9 +10,23 @@ test('getOrder', async () => {
         orderDirection: 'desc',
         protocol: "seaport"
     });
-    expect(data.next).toBeDefined()
-    expect(data.orders.length).toBeLessThanOrEqual(1)
-},6000)
+    expect(data).toBeDefined()
+}, 6000)
+
+test('getOrderByTokenId', async () => {
+    const api = new OpenSeaAPI({apiKey: '2f6f419a083c46de9d83ce3dbe7db601', networkName: Network.Main});
+
+    const data = await api.getOrder({
+        side: 'ask',
+        orderBy: 'created_date',
+        orderDirection: 'desc',
+        protocol: "seaport",
+        assetContractAddress: "0x2ee6af0dff3a1ce3f7e3414c52c48fd50d73691e",
+        tokenIds: ['1900', '5804']
+    });
+    console.log(data)
+    expect(data).toBeDefined()
+}, 6000)
 test('getOrders', async () => {
     const api = new OpenSeaAPI({apiKey: '2f6f419a083c46de9d83ce3dbe7db601', networkName: Network.Main});
 
