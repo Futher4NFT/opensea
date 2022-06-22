@@ -6,12 +6,13 @@ import {constructPrivateListingCounterOrder, getPrivateListingFulfillments} from
 import {OpenSeaAPI} from "./api";
 import {OpenSeaAPIConfig} from "./types";
 import {CONDUIT_KEYS_TO_CONDUIT, CROSS_CHAIN_DEFAULT_CONDUIT_KEY} from "./constants";
+import {OrderWithCounter} from "@opensea/seaport-js/lib/types";
 
 export class OpenSeaSDK {
     public seaport: Seaport;
     public readonly api: OpenSeaAPI;
 
-    constructor(provider: JsonRpcProvider,apiConfig: OpenSeaAPIConfig = {},) {
+    constructor(provider: JsonRpcProvider, apiConfig: OpenSeaAPIConfig = {},) {
         this.seaport = new Seaport(provider, {
             conduitKeyToConduit: CONDUIT_KEYS_TO_CONDUIT,
             overrides: {
@@ -21,6 +22,12 @@ export class OpenSeaSDK {
         this.api = new OpenSeaAPI(apiConfig);
     }
 
+    /**
+     * 下单
+     * @param order
+     * @param accountAddress
+     * @param recipientAddress
+     */
     public async fulfillOrder({
                                   order,
                                   accountAddress,
@@ -62,6 +69,38 @@ export class OpenSeaSDK {
         return transactionHash;
     }
 
+    /**
+     * 批量
+     * @param orders
+     * @param accountAddress
+     * @param recipientAddress
+     */
+    public async fulfillOrders({orders, accountAddress, recipientAddress}: {
+        orders: Order[];
+        accountAddress: string;
+        recipientAddress?: string;
+    }): Promise<string> {
+        const fulfillOrderDetails: { order: OrderWithCounter; }[] = [];
+        let transactionHash: string;
+        orders.forEach(order => {
+            fulfillOrderDetails.push({order: order.protocol_data})
+        })
+        const {executeAllActions} = await this.seaport.fulfillOrders({
+            fulfillOrderDetails,
+            accountAddress,
+            recipientAddress
+        })
+        const transaction = await executeAllActions();
+        transactionHash = transaction.hash;
+        return transactionHash;
+    }
+
+    /**
+     * 私有下单
+     * @param order
+     * @param accountAddress
+     * @private
+     */
     private async fulfillPrivateOrder({
                                           order,
                                           accountAddress,
