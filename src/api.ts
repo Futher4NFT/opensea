@@ -1,5 +1,5 @@
-import {Network, OpenSeaAPIConfig} from "./types";
-import {API_BASE_MAINNET, API_BASE_RINKEBY} from "./constants";
+import {Collection, Network, OpenSeaAPIConfig} from "./types";
+import {API_BASE_MAINNET, API_BASE_RINKEBY, API_PATH} from "./constants";
 import axios, {AxiosInstance} from "axios";
 import {Order, OrdersQueryOptions, QueryCursors} from "./orders/types";
 import {getOrdersAPIPath, serializeOrdersQueryOptions} from "./orders/utils";
@@ -32,6 +32,14 @@ export class OpenSeaAPI {
             headers: {...(this.apiKey ? {"X-API-KEY": this.apiKey} : {}),},
             ...config.axiosConfig,
         });
+        this.api.interceptors.response.use(
+            (response) => {
+                return response;
+            },
+            (error)=>{
+                return error
+            }
+        )
     }
 
     async get<T>(apiPath: string, query: any = {}): Promise<T> {
@@ -70,17 +78,23 @@ export class OpenSeaAPI {
         return data.orders[0];
     }
 
+    /**
+     * 批量获取多个订单
+     * @param protocol
+     * @param side
+     * @param orderDirection
+     * @param orderBy
+     * @param restOptions
+     */
     public async getOrders({
                                protocol,
                                side,
                                orderDirection = "desc",
                                orderBy = "created_date",
                                ...restOptions
-                           }: Omit<OrdersQueryOptions, "limit">): Promise<
-        QueryCursors & {
+                           }: Omit<OrdersQueryOptions, "limit">): Promise<QueryCursors & {
         orders: Order[];
-    }
-        > {
+    }> {
         return await this.get<QueryCursors & {
             orders: Order[];
         }>(
@@ -92,5 +106,19 @@ export class OpenSeaAPI {
                 ...restOptions,
             })
         );
+    }
+
+    /**
+     * 获取集合信息
+     * @param collectionSlug
+     */
+    public async getCollection(collectionSlug: string): Promise<false | Collection> {
+        const data = await this.get<{ collection?: Collection, success?: boolean }>(
+            `${API_PATH}/collection/${collectionSlug}`
+        );
+        if (data?.collection) {
+            return data.collection
+        }
+        return false;
     }
 }

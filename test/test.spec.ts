@@ -1,9 +1,8 @@
 import {Network, OpenSeaAPI} from "../src";
 
+const api = new OpenSeaAPI({apiKey: '2f6f419a083c46de9d83ce3dbe7db601', networkName: Network.Main});
 
-test('getOrder', async () => {
-    const api = new OpenSeaAPI({apiKey: '2f6f419a083c46de9d83ce3dbe7db601', networkName: Network.Main});
-
+test('get order', async () => {
     const data = await api.getOrder({
         side: 'ask',
         orderBy: 'created_date',
@@ -13,9 +12,7 @@ test('getOrder', async () => {
     expect(data).toBeDefined()
 }, 6000)
 
-test('getOrderByTokenId', async () => {
-    const api = new OpenSeaAPI({apiKey: '2f6f419a083c46de9d83ce3dbe7db601', networkName: Network.Main});
-
+test('get order by token id', async () => {
     const data = await api.getOrder({
         side: 'ask',
         orderBy: 'created_date',
@@ -27,9 +24,7 @@ test('getOrderByTokenId', async () => {
     console.log(data)
     expect(data).toBeDefined()
 }, 6000)
-test('getOrders', async () => {
-    const api = new OpenSeaAPI({apiKey: '2f6f419a083c46de9d83ce3dbe7db601', networkName: Network.Main});
-
+test('get orders', async () => {
     const data = await api.getOrders({
         side: 'ask',
         orderBy: 'created_date',
@@ -39,3 +34,14 @@ test('getOrders', async () => {
     expect(data.next).toBeDefined()
     expect(data.orders.length).toBeGreaterThanOrEqual(0)
 },6000)
+
+test('get collection', async () => {
+    const data = await api.getCollection('best-creature')
+    console.log(data)
+    expect(data).toBeDefined()
+})
+test('get collection error', async () => {
+    const data = await api.getCollection('best-credsaature')
+    console.log(data)
+    expect(data).toBe(false)
+})
